@@ -1,12 +1,5 @@
 # SPOTILAB 🎧
 ## Entrega 1: Explorador de datos
-
-**Integrantes del grupo:**
--
--
--
--
-
 ## 1. Descripción del proyecto
 
 SPOTILAB es un programa desarrollado en Python que permite explorar y analizar datos de canciones populares de Spotify durante 2023. Funciona mediante un menú interactivo en consola y utiliza un subconjunto de 50 registros del dataset.
