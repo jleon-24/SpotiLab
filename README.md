@@ -17,7 +17,7 @@ Algunas de las columnas utilizadas son:
 - `track_name`: nombre de la canción.
 - `artist(s)_name`: nombre del artista o artistas.
 - `released_year`: año de lanzamiento.
-- `streams`: cantidad de reproducciones.
+- `streams`: cantidad de reproducciones
 
 ## 3. Funcionalidades
 
@@ -74,7 +74,3 @@ py principal.py
 ```
 
 3. Seleccionar una opción del menú e ingresar los datos solicitados.
-
-## 9. Producto creativo
-
-Como parte de la presentación en video, el grupo mostrará un póster digital con el nombre SPOTILAB, el dataset utilizado y las preguntas que busca responder el proyecto.
