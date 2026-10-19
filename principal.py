@@ -48,7 +48,7 @@ def buscar_registros(encabezados, datos, campo, termino):
 
     for fila in datos:
         if termino.lower().replace(" ", "") in fila[indice].lower().replace(" ", ""):
-            coincidencias.append(fila)
+            coincidencias.append((fila[0],fila[1]))
 
     return coincidencias
 
@@ -88,22 +88,22 @@ def calcular_estadisticas(encabezados, datos, campo):
     return maximo, minimo, promedio
 
 
-def agrupar_por_categoria(encabezados, datos, campo):
-    """Cuenta cuántas veces aparece cada valor de una columna."""
-    indice = encabezados.index(campo)
-    conteo = {}
+def cantidad_streams(encabezados, datos, campo, valor):
+    """Lista las canciones que superan una cantidad de streams."""
+    indice_streams = encabezados.index(campo)
+    resultados = []
 
     for fila in datos:
-        valor = fila[indice].strip()
+        try:
+            streams = int(fila[indice_streams].strip())
 
-        if valor in conteo:
-            conteo[valor] += 1
-        else:
-            conteo[valor] = 1
+            if streams > valor:
+                resultados.append((fila[0],fila[indice_streams]))
 
-    conteo_ordenado = sorted(conteo.items(),key=lambda x: x[1],reverse=True)
+        except ValueError:
+            continue
 
-    return conteo_ordenado
+    return resultados
 
 
 def mostrar_menu():
@@ -137,7 +137,7 @@ def main():
             resultados = buscar_registros(encabezados, datos, campo, termino)
 
             for fila in resultados:
-                print(" | ".join(fila))
+                print("Canción:", fila[0], "| artista:", fila[1])
 
             print("Se encontraron", len(resultados), "registros.")
 
@@ -159,23 +159,21 @@ def main():
                 print("Promedio:", round(promedio, 2))
 
         elif opcion == "3":
-            campo = "artist(s)_name"
+            campo = "streams"
 
-            if campo not in encabezados:
-                print("No se encontró la columna de artistas.")
+            try:
+                valor = int(input("¿Más de cuántos streams?: "))
+            except ValueError:
+                print("Por favor, escribe un número entero válido.")
                 continue
-            
-            print("\n--- Artistas más frecuentes ---")
-            
-            conteo = agrupar_por_categoria(encabezados, datos, campo)
-            
-            for valor, frecuencia in conteo:
-                print(f"{valor}: {frecuencia} registro(s)")
 
-        elif opcion == "0":
-            print("¡Hasta luego! Éxito con el video.")
-            break
+            resultados = cantidad_streams (encabezados, datos, campo, valor)
 
+            print(f"\n--- Canciones con más de {valor} streams ---")
+
+            for fila in resultados:
+                print("Canción:", fila[0], "| Streams:", fila[1])
         else:
-            print("Opción no válida. Intenta de nuevo.")
+            print("Gracias por consultar.")
+            break
 main()
