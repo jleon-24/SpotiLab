@@ -110,7 +110,7 @@ def mostrar_menu():
     print("\n=== EXPLORADOR DE SPOTIFY (SPOTILAB) ===")
     print("1. Buscar canciones o artistas")
     print("2. Estadísticas básicas (Streams)")
-    print("3. Artistas más frecuentes (Agrupar por categoría)")
+    print("3. Buscar canciones por cantidad de streams")
     print("0. Salir")
 
     return input("Elige una opción: ")
@@ -173,7 +173,9 @@ def main():
 
             for fila in resultados:
                 print("Canción:", fila[0], "| Streams:", fila[1])
-        else:
+        elif opcion == "0":
             print("Gracias por consultar.")
             break
+        else:
+            print("Opción no válida. Intenta de nuevo.")
 main()
