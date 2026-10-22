@@ -73,4 +73,5 @@ proyecto programacion/
 py principal.py
 ```
 
+
 3. Seleccionar una opción del menú e ingresar los datos solicitados.
