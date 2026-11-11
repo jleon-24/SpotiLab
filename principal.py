@@ -1,181 +1,240 @@
-# PROYECTO SPOTIFY 2023 - SPOTILAB
-# Entrega 1: Explorador de datos
+# ==================== IMPORTACIONES ====================
 
-def separar_linea(linea):
-    campos = []
-    campo = ""
-    dentro_comillas = False
-
-    for caracter in linea:
-        if caracter == '"':
-            dentro_comillas = not dentro_comillas
-
-        elif caracter == "," and dentro_comillas == False:
-            campos.append(campo)
-            campo = ""
-
-        elif caracter != "\n" and caracter != "\r":
-            campo = campo + caracter
-
-    campos.append(campo)
-    return campos
+import analisis
+from pprint import pprint
 
 
-def cargar_datos(ruta, limite):
-    datos = []
+# ==================== PRESENTACIÓN DE RESULTADOS ====================
 
-    with open(ruta, encoding="latin-1") as archivo:
-        primera_linea = archivo.readline()
-        encabezados = separar_linea(primera_linea)
+def mostrar_canciones(resultados):
+    for cancion in resultados:
+        nombre = cancion.get("track_name", "Sin nombre")
+        artista = cancion.get("artist(s)_name", "Sin artista")
 
-        contador = 0
-
-        for linea in archivo:
-            if contador < limite:
-                fila = separar_linea(linea)
-                datos.append(fila)
-                contador = contador + 1
-            else:
-                break
-
-    return encabezados, datos
-
-
-def buscar_registros(encabezados, datos, campo, termino):
-    """Busca un término en una columna y devuelve las coincidencias."""
-    coincidencias = []
-    indice = encabezados.index(campo)
-
-    for fila in datos:
-        if termino.lower().replace(" ", "") in fila[indice].lower().replace(" ", ""):
-            coincidencias.append((fila[0],fila[1]))
-
-    return coincidencias
-
-
-def calcular_estadisticas(encabezados, datos, campo):
-    """Calcula máximo, mínimo y promedio de una columna numérica usando bucles y acumuladores."""
-    indice = encabezados.index(campo)
-    valores = []
-
-    for fila in datos:
-        try:
-            # Limpiamos comas o espacios por si acaso en los números grandes
-            valor_limpio = fila[indice].replace(",", "").strip()
-            numero = float(valor_limpio)
-            valores.append(numero)
-        except ValueError:
-            continue
-
-    if len(valores) == 0:
-        return None
-
-    maximo = valores[0]
-    minimo = valores[0]
-    suma = 0
-
-    for numero in valores:
-        if numero > maximo:
-            maximo = numero
-
-        if numero < minimo:
-            minimo = numero
-
-        suma += numero
-
-    promedio = suma / len(valores)
-
-    return maximo, minimo, promedio
-
-
-def cantidad_streams(encabezados, datos, campo, valor):
-    """Lista las canciones que superan una cantidad de streams."""
-    indice_streams = encabezados.index(campo)
-    resultados = []
-
-    for fila in datos:
-        try:
-            streams = int(fila[indice_streams].strip())
-
-            if streams > valor:
-                resultados.append((fila[0],fila[indice_streams]))
-
-        except ValueError:
-            continue
-
-    return resultados
+        print("Canción:", nombre, "| Artista:", artista)
 
 
 def mostrar_menu():
-    print("\n=== EXPLORADOR DE SPOTIFY (SPOTILAB) ===")
+    print("\n=== SPOTILAB: EXPLORADOR DE SPOTIFY ===")
     print("1. Buscar canciones o artistas")
-    print("2. Estadísticas básicas (Streams)")
+    print("2. Consultar estadísticas")
     print("3. Buscar canciones por cantidad de streams")
+    print("4. Generar resumen general")
+    print("5. Consultar resultados guardados")
+    print("6. Consultar resumen guardado")
+    print("7. Consultar historial")
     print("0. Salir")
 
     return input("Elige una opción: ")
 
 
+# ==================== PROGRAMA PRINCIPAL ====================
+
 def main():
-    # Carga el subconjunto de 50 filas requerido para la Entrega 1
-    encabezados, datos = cargar_datos("spotify-2023.csv", 50)
+    encabezados, datos = analisis.cargar_datos("spotify-2023.csv")
 
     print("Se cargaron", len(datos), "registros correctamente.")
 
     while True:
         opcion = mostrar_menu()
 
+        # ---------- OPCIÓN 1: BÚSQUEDA ----------
+
         if opcion == "1":
-            termino = input("Escribe el término que quieres buscar: ")
-            print("Campos disponibles:", encabezados)
-            campo = input("¿En qué campo quieres buscar? (ej. track_name, artist(s)_name): ")
+            print("\nCampos disponibles:")
+            print(encabezados)
+
+            campo = input("¿En qué campo quieres buscar?: ")
 
             if campo not in encabezados:
-                print("Ese campo no existe en los encabezados.")
+                print("Ese campo no existe.")
                 continue
 
-            resultados = buscar_registros(encabezados, datos, campo, termino)
+            termino = input("Escribe el término que quieres buscar: ")
 
-            for fila in resultados:
-                print("Canción:", fila[0], "| artista:", fila[1])
+            resultados = analisis.buscar_registros(
+                datos, campo, termino
+            )
+
+            mostrar_canciones(resultados)
 
             print("Se encontraron", len(resultados), "registros.")
 
+            analisis.guardar_resultado(
+                "Búsqueda",
+                campo + ": " + termino,
+                resultados
+            )
+
+            analisis.registrar_consulta(
+                "Búsqueda",
+                campo + ": " + termino,
+                len(resultados)
+            )
+
+        # ---------- OPCIÓN 2: ESTADÍSTICAS ----------
+
         elif opcion == "2":
-            campo = "streams"
+            print("\nCampos disponibles:")
+            print(encabezados)
+
+            campo = input("¿De qué campo quieres las estadísticas?: ")
+
             if campo not in encabezados:
-                print(f"El campo '{campo}' no se encuentra en los encabezados.")
+                print("Ese campo no existe.")
                 continue
 
-            resultado = calcular_estadisticas(encabezados, datos, campo)
+            resultado = analisis.calcular_estadisticas(datos, campo)
 
             if resultado is None:
                 print("No se encontraron valores numéricos válidos.")
+                cantidad = 0
             else:
-                maximo, minimo, promedio = resultado
-                print(f"\n--- Estadísticas para el campo: {campo} ---")
-                print("Máximo:", maximo)
-                print("Mínimo:", minimo)
-                print("Promedio:", round(promedio, 2))
+                print("\n--- ESTADÍSTICAS ---")
+                print("Máximo:", resultado["maximo"])
+                print("Mínimo:", resultado["minimo"])
+                print("Promedio:", round(resultado["promedio"], 2))
+                print("Cantidad de valores:", resultado["cantidad"])
+
+                cantidad = resultado["cantidad"]
+
+            analisis.guardar_resultado(
+                "Estadísticas",
+                campo,
+                resultado
+            )
+
+            analisis.registrar_consulta(
+                "Estadísticas",
+                campo,
+                cantidad
+            )
+
+        # ---------- OPCIÓN 3: BÚSQUEDA POR STREAMS ----------
 
         elif opcion == "3":
-            campo = "streams"
-
             try:
                 valor = int(input("¿Más de cuántos streams?: "))
             except ValueError:
-                print("Por favor, escribe un número entero válido.")
+                print("Debes escribir un número entero.")
                 continue
 
-            resultados = cantidad_streams (encabezados, datos, campo, valor)
+            resultados = analisis.canciones_por_streams(datos, valor)
 
-            print(f"\n--- Canciones con más de {valor} streams ---")
+            mostrar_canciones(resultados)
 
-            for fila in resultados:
-                print("Canción:", fila[0], "| Streams:", fila[1])
+            print("Se encontraron", len(resultados), "canciones.")
+
+            analisis.guardar_resultado(
+                "Búsqueda por streams",
+                "Más de " + str(valor),
+                resultados
+            )
+
+            analisis.registrar_consulta(
+                "Búsqueda por streams",
+                "Más de " + str(valor),
+                len(resultados)
+            )
+
+        # ---------- OPCIÓN 4: RESUMEN GENERAL ----------
+
+        elif opcion == "4":
+            resumen = analisis.generar_resumen(encabezados, datos)
+
+            print("\n--- RESUMEN GENERAL ---")
+            pprint(resumen)
+
+            analisis.guardar_resumen(resumen)
+
+            analisis.guardar_resultado(
+                "Resumen general",
+                "Dataset completo",
+                resumen
+            )
+
+            analisis.registrar_consulta(
+                "Resumen general",
+                "Dataset completo",
+                resumen["total_registros"]
+            )
+
+            print("Resumen guardado correctamente.")
+
+        # ---------- OPCIÓN 5: RECUPERAR RESULTADOS ----------
+
+        elif opcion == "5":
+            resultados = analisis.cargar_resultados()
+
+            if len(resultados) == 0:
+                print("Todavía no hay resultados guardados.")
+                continue
+
+            print("\n--- RESULTADOS GUARDADOS ---")
+
+            for i, resultado in enumerate(resultados):
+                print(
+                    i + 1,
+                    "-",
+                    resultado["tipo"],
+                    "|",
+                    resultado["consulta"],
+                    "|",
+                    resultado["fecha"]
+                )
+
+            try:
+                seleccion = int(
+                    input("¿Qué resultado quieres consultar?: ")
+                )
+
+                if seleccion < 1 or seleccion > len(resultados):
+                    print("Número fuera del rango.")
+                    continue
+
+                print("\n--- RESULTADO RECUPERADO ---")
+                pprint(resultados[seleccion - 1])
+
+            except ValueError:
+                print("Debes escribir un número.")
+
+        # ---------- OPCIÓN 6: RECUPERAR RESUMEN ----------
+
+        elif opcion == "6":
+            resumen = analisis.cargar_resumen()
+
+            if resumen is None:
+                print("Todavía no existe un resumen guardado.")
+            else:
+                print("\n--- RESUMEN RECUPERADO ---")
+                pprint(resumen)
+
+        # ---------- OPCIÓN 7: HISTORIAL ----------
+
+        elif opcion == "7":
+            historial = analisis.cargar_historial()
+
+            if len(historial) == 0:
+                print("Todavía no hay consultas registradas.")
+            else:
+                print("\n--- HISTORIAL DE CONSULTAS ---")
+
+                for consulta in historial:
+                    print(
+                        "Tipo:", consulta["tipo"],
+                        "| Consulta:", consulta["consulta"],
+                        "| Resultados:", consulta["cantidad_resultados"],
+                        "| Fecha:", consulta["fecha_hora"]
+                    )
+
+        # ---------- SALIR ----------
+
         elif opcion == "0":
-            print("Gracias por consultar.")
+            print("Gracias por utilizar SpotiLab.")
             break
+
         else:
             print("Opción no válida. Intenta de nuevo.")
+
+
 main()
