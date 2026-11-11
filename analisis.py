@@ -1,13 +1,14 @@
-# Funciones para cargar y analizar el dataset de Spotify.
+# ==================== IMPORTACIONES ====================
 
 import csv
+import json
+import os
+from datetime import datetime
 
+
+# ==================== CARGA DEL DATASET ====================
 
 def cargar_datos(ruta):
-    """
-    Lee el dataset completo usando csv.reader.
-    Devuelve una lista de diccionarios: cada diccionario representa una canción.
-    """
     datos = []
 
     with open(ruta, mode="r", encoding="latin-1", newline="") as archivo:
@@ -26,8 +27,9 @@ def cargar_datos(ruta):
     return encabezados, datos
 
 
+# ==================== BÚSQUEDA ====================
+
 def buscar_registros(datos, campo, termino):
-    """Busca un término dentro de los valores de un campo."""
     coincidencias = []
     termino = termino.lower().replace(" ", "")
 
@@ -40,23 +42,35 @@ def buscar_registros(datos, campo, termino):
     return coincidencias
 
 
+# ==================== ESTADÍSTICAS ====================
+
 def calcular_estadisticas(datos, campo):
-    """Calcula máximo, mínimo y promedio de un campo numérico."""
     valores = []
 
     for cancion in datos:
         try:
             numero = float(cancion[campo].replace(",", "").strip())
             valores.append(numero)
-        except (ValueError, AttributeError):
+        except (ValueError, AttributeError, KeyError):
             continue
 
     if len(valores) == 0:
         return None
 
-    maximo = max(valores)
-    minimo = min(valores)
-    promedio = sum(valores) / len(valores)
+    maximo = valores[0]
+    minimo = valores[0]
+    suma = 0
+
+    for numero in valores:
+        if numero > maximo:
+            maximo = numero
+
+        if numero < minimo:
+            minimo = numero
+
+        suma += numero
+
+    promedio = suma / len(valores)
 
     return {
         "maximo": maximo,
@@ -66,8 +80,9 @@ def calcular_estadisticas(datos, campo):
     }
 
 
+# ==================== CANCIONES POR STREAMS ====================
+
 def canciones_por_streams(datos, valor):
-    """Devuelve las canciones que superan el número de streams indicado."""
     resultados = []
 
     for cancion in datos:
@@ -76,24 +91,22 @@ def canciones_por_streams(datos, valor):
 
             if streams > valor:
                 resultados.append(cancion)
+
         except (ValueError, AttributeError, KeyError):
             continue
 
     return resultados
 
 
+# ==================== RESUMEN GENERAL ====================
+
 def generar_resumen(encabezados, datos):
-    """
-    Calcula estadísticas generales del dataset.
-    Usa conjuntos para contar valores únicos sin repetirlos.
-    """
     resumen = {
         "total_registros": len(datos),
         "valores_unicos": {},
         "maximos_minimos": {}
     }
 
-    # Campos de texto de interés: contamos valores distintos con conjuntos.
     campos_texto = ["track_name", "artist(s)_name", "key", "mode"]
 
     for campo in campos_texto:
@@ -108,7 +121,6 @@ def generar_resumen(encabezados, datos):
 
             resumen["valores_unicos"][campo] = len(valores)
 
-    # Campos numéricos: guardamos máximo y mínimo cuando hay datos válidos.
     campos_numericos = ["streams", "bpm", "released_year"]
 
     for campo in campos_numericos:
@@ -122,3 +134,88 @@ def generar_resumen(encabezados, datos):
                 }
 
     return resumen
+
+
+# ==================== GUARDAR Y RECUPERAR RESULTADOS JSON ====================
+
+def cargar_resultados(ruta="resultados.json"):
+    if not os.path.exists(ruta):
+        return []
+
+    with open(ruta, mode="r", encoding="utf-8") as archivo:
+        resultados = json.load(archivo)
+
+    return resultados
+
+
+def guardar_resultado(tipo, consulta, resultado, ruta="resultados.json"):
+    resultados = cargar_resultados(ruta)
+
+    nuevo_resultado = {
+        "tipo": tipo,
+        "consulta": consulta,
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "resultado": resultado
+    }
+
+    resultados.append(nuevo_resultado)
+
+    with open(ruta, mode="w", encoding="utf-8") as archivo:
+        json.dump(resultados, archivo, indent=4, ensure_ascii=False)
+
+
+# ==================== GUARDAR Y RECUPERAR RESUMEN JSON ====================
+
+def guardar_resumen(resumen, ruta="resumen.json"):
+    with open(ruta, mode="w", encoding="utf-8") as archivo:
+        json.dump(resumen, archivo, indent=4, ensure_ascii=False)
+
+
+def cargar_resumen(ruta="resumen.json"):
+    if not os.path.exists(ruta):
+        return None
+
+    with open(ruta, mode="r", encoding="utf-8") as archivo:
+        resumen = json.load(archivo)
+
+    return resumen
+
+
+# ==================== HISTORIAL DE CONSULTAS CSV ====================
+
+def registrar_consulta(tipo, consulta, cantidad, ruta="historial.csv"):
+    archivo_nuevo = not os.path.exists(ruta) or os.path.getsize(ruta) == 0
+
+    with open(ruta, mode="a", encoding="utf-8", newline="") as archivo:
+        escritor = csv.writer(archivo)
+
+        if archivo_nuevo:
+            escritor.writerow([
+                "tipo",
+                "consulta",
+                "cantidad_resultados",
+                "fecha_hora"
+            ])
+
+        fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        escritor.writerow([
+            tipo,
+            consulta,
+            cantidad,
+            fecha_hora
+        ])
+
+
+def cargar_historial(ruta="historial.csv"):
+    if not os.path.exists(ruta):
+        return []
+
+    with open(ruta, mode="r", encoding="utf-8", newline="") as archivo:
+        lector = csv.DictReader(archivo)
+        historial = []
+
+        for fila in lector:
+            historial.append(fila)
+
+    return historial
