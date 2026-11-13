@@ -1,105 +1,70 @@
 # SPOTILAB 🎧
-## Entrega 2: Explorador y análisis de datos
-
+## Entrega 1: Explorador de datos
 ## 1. Descripción del proyecto
 
-SPOTILAB es un programa desarrollado en Python que permite explorar y analizar el dataset de canciones populares de Spotify de 2023. Funciona mediante un menú interactivo en consola y permite realizar búsquedas, consultar estadísticas, generar un resumen general y guardar los resultados de las consultas.
+SPOTILAB es un programa desarrollado en Python que permite explorar y analizar datos de canciones populares de Spotify durante 2023. Funciona mediante un menú interactivo en consola y utiliza un subconjunto de 50 registros del dataset.
+
+El proyecto aplica conceptos de programación como condicionales, bucles, strings y funciones para responder preguntas básicas sobre las canciones y sus artistas.
 
 ## 2. Dataset utilizado
 
 El programa utiliza el dataset **Spotify 2023**, almacenado en el archivo `spotify-2023.csv`.
 
-Python lee el archivo CSV y procesa sus registros. Los resultados de las consultas y el resumen se almacenan por separado en archivos JSON. El historial de consultas se registra en un archivo CSV independiente.
+Se trabaja con los primeros 50 registros del archivo, además de los encabezados. Los datos se cargan utilizando `open()` y se procesan línea por línea, sin utilizar bibliotecas externas.
 
-Algunas columnas del dataset son:
+Algunas de las columnas utilizadas son:
 
 - `track_name`: nombre de la canción.
 - `artist(s)_name`: nombre del artista o artistas.
 - `released_year`: año de lanzamiento.
-- `streams`: cantidad de reproducciones.
-- `bpm`: pulsaciones por minuto.
+- `streams`: cantidad de reproducciones
 
-## 3. Organización de los archivos
+## 3. Funcionalidades
 
-- **`principal.py`**: contiene el menú, solicita los datos al usuario, muestra los resultados y coordina las opciones del programa.
-- **`analisis.py`**: contiene las funciones para cargar y analizar el dataset, generar el resumen, guardar y recuperar resultados JSON y administrar el historial.
-- **`spotify-2023.csv`**: dataset original. No se modifica.
-- **`resultados.json`**: se crea automáticamente para guardar los resultados de las consultas.
-- **`resumen.json`**: se crea automáticamente para guardar el resumen general.
-- **`historial.csv`**: se crea automáticamente para registrar las consultas realizadas.
+### 3.1. Buscar registros
 
-Los archivos `resultados.json`, `resumen.json` y `historial.csv` se generan al utilizar las funcionalidades correspondientes. No es necesario crearlos manualmente.
+El usuario ingresa un término y selecciona la columna en la que desea buscar. El programa muestra los registros que contienen el término y la cantidad de coincidencias encontradas.
 
-## 4. Funcionalidades
+### 3.2. Estadísticas básicas
 
-### 4.1. Buscar canciones o artistas
+El programa calcula el máximo, el mínimo y el promedio de la columna numérica `streams`, utilizando bucles y variables acumuladoras.
 
-Permite seleccionar una columna del dataset e ingresar un término de búsqueda. El programa muestra las coincidencias y guarda la consulta y sus resultados.
+### 3.3. Agrupar por categoría
 
-### 4.2. Consultar estadísticas
+El programa cuenta cuántos registros corresponden a cada valor de la columna `artist(s)_name` y muestra los resultados ordenados de mayor a menor frecuencia.
 
-Permite seleccionar un campo y calcular su máximo, mínimo, promedio y cantidad de valores numéricos válidos.
+## 4. Preguntas que busca responder el proyecto
 
-### 4.3. Buscar canciones por cantidad de streams
+- ¿Qué canciones o artistas aparecen en los registros del dataset?
+- ¿Cuántos registros contienen un término específico?
+- ¿Cuál es el máximo, el mínimo y el promedio de reproducciones de las canciones analizadas?
+- ¿Qué artistas aparecen con mayor frecuencia en el subconjunto de datos?
 
-Permite ingresar una cantidad de reproducciones y consultar las canciones que superan ese valor.
+## 5. Conceptos de programación aplicados
 
-### 4.4. Generar resumen general
+- **Condicionales:** permiten ejecutar acciones según la opción seleccionada en el menú.
+- **Bucles:** permiten recorrer las filas del archivo y mantener activo el menú interactivo.
+- **Strings:** permiten procesar las líneas del archivo y buscar términos en los datos.
+- **Funciones propias:** organizan el programa en tareas específicas con parámetros y valores de retorno.
+- **Listas y diccionarios:** permiten almacenar registros y contar frecuencias por categoría.
+- **Variables acumuladoras:** se utilizan para calcular estadísticas numéricas.
 
-Calcula el total de registros, la cantidad de valores únicos de algunos campos de texto y los valores máximos y mínimos de campos numéricos. El resumen se guarda en `resumen.json`.
-
-### 4.5. Consultar resultados guardados
-
-Muestra las consultas almacenadas en `resultados.json` y permite seleccionar una para recuperar su información.
-
-### 4.6. Consultar resumen guardado
-
-Lee y muestra el resumen previamente almacenado en `resumen.json`.
-
-### 4.7. Consultar historial
-
-Muestra las consultas registradas en `historial.csv`, incluyendo el tipo de consulta, el término o criterio, la cantidad de resultados y la fecha y hora.
-
-## 5. Persistencia de la información
-
-El programa utiliza JSON para almacenar y recuperar resultados y el resumen general. Python realiza las operaciones de lectura y escritura mediante el módulo `json`.
-
-El historial se guarda en formato CSV mediante el módulo `csv`.
-
-El dataset original permanece en `spotify-2023.csv`. Los archivos JSON no reemplazan el dataset ni contienen la lógica de procesamiento.
-
-## 6. Conceptos de programación aplicados
-
-- **Funciones propias:** separan las tareas del programa.
-- **Condicionales:** controlan las opciones del menú y validan entradas.
-- **Bucles:** recorren los registros y mantienen activo el menú.
-- **Listas y diccionarios:** organizan los datos y resultados.
-- **Conjuntos:** permiten contar valores únicos.
-- **Manejo de archivos:** permite leer el dataset y guardar información.
-- **Manejo de excepciones:** permite controlar entradas no numéricas y valores inválidos.
-- **Módulos:** permiten separar la interfaz del análisis de datos.
-- **Persistencia:** permite conservar resultados entre ejecuciones.
-
-## 7. Estructura del proyecto
+## 6. Estructura del proyecto
 
 ```text
-SpotiLab/
+proyecto programacion/
 ├── principal.py
-├── analisis.py
 ├── spotify-2023.csv
-├── resultados.json   (se genera al guardar consultas)
-├── resumen.json      (se genera al guardar el resumen)
-├── historial.csv     (se genera al registrar consultas)
 └── README.md
 ```
 
-## 8. Requisitos de ejecución
+## 7. Requisitos de ejecución
 
 - Python 3 instalado.
-- Los archivos `principal.py`, `analisis.py` y `spotify-2023.csv` ubicados en la misma carpeta.
-- No se requieren instalaciones adicionales: se utilizan módulos de la biblioteca estándar de Python.
+- Los archivos `principal.py` y `spotify-2023.csv` ubicados en la misma carpeta.
+- No se requieren bibliotecas externas.
 
-## 9. Instrucciones de ejecución
+## 8. Instrucciones de ejecución
 
 1. Abrir una terminal en la carpeta del proyecto.
 2. Ejecutar el siguiente comando:
@@ -107,5 +72,6 @@ SpotiLab/
 ```powershell
 py principal.py
 ```
+
 
 3. Seleccionar una opción del menú e ingresar los datos solicitados.
