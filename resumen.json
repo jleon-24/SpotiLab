@@ -1,0 +1,23 @@
+{
+    "total_registros": 953,
+    "valores_unicos": {
+        "track_name": 943,
+        "artist(s)_name": 645,
+        "key": 11,
+        "mode": 2
+    },
+    "maximos_minimos": {
+        "streams": {
+            "maximo": 3703895074.0,
+            "minimo": 2762.0
+        },
+        "bpm": {
+            "maximo": 206.0,
+            "minimo": 65.0
+        },
+        "released_year": {
+            "maximo": 2023.0,
+            "minimo": 1930.0
+        }
+    }
+}

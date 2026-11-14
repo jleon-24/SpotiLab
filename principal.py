@@ -1,3 +1,4 @@
+
 # ==================== IMPORTACIONES ====================
 
 import analisis
@@ -7,6 +8,9 @@ from pprint import pprint
 # ==================== PRESENTACIÓN DE RESULTADOS ====================
 
 def mostrar_canciones(resultados):
+    if len(resultados) == 0:
+        print("No se encontraron canciones.")
+
     for cancion in resultados:
         nombre = cancion.get("track_name", "Sin nombre")
         artista = cancion.get("artist(s)_name", "Sin artista")
@@ -31,9 +35,22 @@ def mostrar_menu():
 # ==================== PROGRAMA PRINCIPAL ====================
 
 def main():
+
+    # ---------- CARGA DEL DATASET ----------
+
     encabezados, datos = analisis.cargar_datos("spotify-2023.csv")
 
     print("Se cargaron", len(datos), "registros correctamente.")
+
+    # ---------- GENERACIÓN AUTOMÁTICA DEL RESUMEN ----------
+
+    resumen = analisis.generar_resumen(encabezados, datos)
+
+    analisis.guardar_resumen(resumen)
+
+    print("Resumen general generado y guardado correctamente.")
+
+    # ---------- MENÚ PRINCIPAL ----------
 
     while True:
         opcion = mostrar_menu()
@@ -236,5 +253,7 @@ def main():
         else:
             print("Opción no válida. Intenta de nuevo.")
 
+
+# ==================== EJECUCIÓN ====================
 
 main()
